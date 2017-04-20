@@ -33,12 +33,20 @@ module Spree::Chimpy
     @api = Mailchimp::API.new(Config.key, Config.api_options) if configured?
   end
 
-  def list
-    @list ||= Interface::List.new(Config.list_name,
+  def list(list_name = nil)
+    if list_name
+      @list = Interface::List.new(list_name,
                         Config.customer_segment_name,
                         Config.double_opt_in,
                         Config.send_welcome_email,
                         Config.list_id) if configured?
+    else
+      @list ||= Interface::List.new(Config.list_name,
+                        Config.customer_segment_name,
+                        Config.double_opt_in,
+                        Config.send_welcome_email,
+                        Config.list_id) if configured?
+    end
   end
 
   def orders
@@ -117,9 +125,19 @@ module Spree::Chimpy
     when :order
       orders.sync(object)
     when :subscribe
-      list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
     when :unsubscribe
-      list.unsubscribe(object.email)
+      list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
     end
   end
+
+  private
+    def get_list_form_store(store_id)
+      if store_id
+        store = Spree::Store.find_by_id(store_id)
+        return store ? store.extra_settings[:mailchimp_list] : nil
+      end
+      
+      return nil
+    end
 end
