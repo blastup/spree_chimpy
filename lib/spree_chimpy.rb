@@ -125,9 +125,17 @@ module Spree::Chimpy
     when :order
       orders.sync(object)
     when :subscribe
-      list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      begin
+        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      rescue => error
+        Rails.logger.info "**** Error subscribing: " + error.message
+      end
     when :unsubscribe
-      list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
+      begin
+        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
+      rescue => error
+        Rails.logger.info "**** Error unsubscribing: " + error.message
+      end
     end
   end
 
