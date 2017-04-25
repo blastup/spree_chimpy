@@ -126,13 +126,23 @@ module Spree::Chimpy
       orders.sync(object)
     when :subscribe
       begin
-        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        # Check if spree_multi_domain gem is applied and thus we have multiple stores
+        if Spree::Store.column_names.include?('extra_settings')
+          list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        else
+          list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        end
       rescue => error
         Rails.logger.info "**** Error subscribing: " + error.message
       end
     when :unsubscribe
       begin
-        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
+        # Check if spree_multi_domain gem is applied and thus we have multiple stores
+        if Spree::Store.column_names.include?('extra_settings')
+          list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
+        else
+          list.unsubscribe(object.email)
+        end
       rescue => error
         Rails.logger.info "**** Error unsubscribing: " + error.message
       end

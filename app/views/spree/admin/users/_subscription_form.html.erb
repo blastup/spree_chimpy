@@ -1,15 +1,21 @@
 <div id="user-subscribe-container">
   <p>
-    <strong><%= Spree.t(:subscribe_to_newsletter_list) %></strong>
-    <% Spree::Store.all.each do |store| %>
-      <% if store.extra_settings[:mailchimp_list] && !store.extra_settings[:mailchimp_list].blank? %>
-        <div class="checkbox">
-          <%= label_tag do %>
-            <%= check_box_tag("user[mailchimp_lists][]", store.id, @subscribed_lists.include?(store.extra_settings[:mailchimp_list])) %>
-            <%= store.extra_settings[:mailchimp_list] %>
-          <% end %>
-        </div>
+    <!-- Check if spree_multi_domain gem is applied and thus we have multiple stores -->
+    <% if Spree::Store.column_names.include?('extra_settings') %>
+      <strong><%= Spree.t(:subscribe_to_newsletter_list) %></strong>
+      <% Spree::Store.all.each do |store| %>
+        <% if store.extra_settings[:mailchimp_list] && !store.extra_settings[:mailchimp_list].blank? %>
+          <div class="checkbox">
+            <%= label_tag do %>
+              <%= check_box_tag("user[mailchimp_lists][]", store.id, @subscribed_lists.include?(store.extra_settings[:mailchimp_list])) %>
+              <%= store.extra_settings[:mailchimp_list] %>
+            <% end %>
+          </div>
+        <% end %>
       <% end %>
+    <% else %>
+      <%= f.check_box :subscribed %>
+      <%= f.label :subscribed, Spree.t(:admin_subscribed_label, scope: :chimpy) %>
     <% end %>
   </p>
 </div>
