@@ -1,3 +1,13 @@
 /*
  *= require spree/backend
 */
+#chimpy-subscribed-list-container {
+  display: none;
+}
+#user-subscribe-container label {
+  margin-right: 10px;
+}
+
+#user-subscribe-container input {
+  margin-right: 5px;
+}

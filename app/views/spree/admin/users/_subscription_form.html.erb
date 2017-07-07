@@ -1,21 +1,17 @@
-<div id="user-subscribe-container">
-  <p>
-    <!-- Check if spree_multi_domain gem is applied and thus we have multiple stores -->
-    <% if Spree::Store.column_names.include?('extra_settings') %>
-      <strong><%= Spree.t(:subscribe_to_newsletter_list) %></strong>
-      <% Spree::Store.all.each do |store| %>
-        <% if store.extra_settings[:mailchimp_list] && !store.extra_settings[:mailchimp_list].blank? %>
-          <div class="checkbox">
-            <%= label_tag do %>
-              <%= check_box_tag("user[mailchimp_lists][]", store.id, @subscribed_lists.include?(store.extra_settings[:mailchimp_list])) %>
-              <%= store.extra_settings[:mailchimp_list] %>
-            <% end %>
-          </div>
-        <% end %>
-      <% end %>
-    <% else %>
-      <%= f.check_box :subscribed %>
+
+<div id="user-subscribe-container" class="panel panel-default">
+  <div class="panel-heading">
+    <h1 class="panel-title"><%= t(:newsletter)%></h1>
+  </div>
+
+  <div class="panel-body ">
+    <div class="form-group">
+      <%= f.check_box :subscribed, id: 'chimpy-subscribed' %>
       <%= f.label :subscribed, Spree.t(:admin_subscribed_label, scope: :chimpy) %>
-    <% end %>
-  </p>
+    </div>
+    <div class="title"> <strong><%= Spree.t(:subscribe_to_newsletter_list) %></strong> </div>
+    <div class="form-group col-md-3" id="chimpy-subscribed-list-container">
+      <%= f.collection_check_boxes(:mailchimp_lists_ids,  Spree::Chimpy.api.lists.list["data"].map{|li| [li['id'],li['name']]}, :first, :last, checked: @user.mailchimp_lists_ids ? JSON.parse(@user.mailchimp_lists_ids) : nil) %>
+    </div>
+  </div>
 </div>
