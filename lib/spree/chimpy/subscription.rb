@@ -16,6 +16,11 @@ module Spree::Chimpy
       defer(:unsubscribe) if unsubscribing?
     end
 
+    def unsubscribe
+      return unless configured?
+      defer(:unsubscribe) if unsubscribing?
+    end
+
     def resubscribe(&block)
       block.call if block
 
@@ -25,12 +30,39 @@ module Spree::Chimpy
         defer(:unsubscribe)
       elsif subscribing? || merge_vars_changed?
         defer(:subscribe)
+      elsif lists_have_changed?
+        defer(:subscribe, new_lists) if new_lists.length > 0
+        defer(:unsubscribe, removed_lists) if removed_lists.length > 0
       end
     end
 
   private
     def defer(event)
       enqueue(event, @model)
+    end
+
+    def defer(event, *args)
+      enqueue(event, @model, *args)
+    end
+    
+    def prev_lists_ids
+      JSON.parse(@model.changes[:mailchimp_lists_ids][0])
+    end
+    
+    def new_lists_ids
+      JSON.parse(@model.changes[:mailchimp_lists_ids][1])
+    end
+
+    def lists_have_changed?
+      @model.changes[:mailchimp_lists_ids] && (prev_lists_ids != new_lists_ids)
+    end
+
+    def new_lists
+      new_lists_ids - prev_lists_ids
+    end
+
+    def removed_lists
+      prev_lists_ids - new_lists_ids
     end
 
     def subscribing?

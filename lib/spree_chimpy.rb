@@ -12,8 +12,8 @@ module Spree::Chimpy
     yield(Spree::Chimpy::Config)
   end
 
-  def enqueue(event, object)
-    payload = {class: object.class.name, id: object.id, object: object}
+  def enqueue(event, object, *args)
+    payload = {class: object.class.name, id: object.id, object: object, args: args}
     ActiveSupport::Notifications.instrument("spree.chimpy.#{event}", payload)
   end
 
@@ -39,6 +39,14 @@ module Spree::Chimpy
                         Config.double_opt_in,
                         Config.send_welcome_email,
                         Config.list_id) if configured?
+  end
+
+  def set_list(id)
+    @list = Interface::List.new(nil,
+                        Config.customer_segment_name,
+                        Config.double_opt_in,
+                        Config.send_welcome_email,
+                        id) if configured?
   end
 
   def orders
@@ -112,14 +120,31 @@ module Spree::Chimpy
 
     event  = payload[:event].to_sym
     object = payload[:object] || payload[:class].constantize.find(payload[:id])
+    args   = payload[:args]
 
     case event
     when :order
       orders.sync(object)
     when :subscribe
-      list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      new_lists_ids = args[0]
+      if new_lists_ids && new_lists_ids.length > 0
+        new_lists_ids.each do |id|
+          set_list(id)
+          list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        end
+      else
+        list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      end
     when :unsubscribe
-      list.unsubscribe(object.email)
+      removed_lists_ids = args[0]
+      if removed_lists_ids && removed_lists_ids.length > 0
+        removed_lists_ids.each do |id|
+          set_list(id)
+          list.unsubscribe(object.email)
+        end
+      else
+        list.unsubscribe(object.email)
+      end
     end
   end
 end
