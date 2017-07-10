@@ -8,12 +8,12 @@ if Spree.user_class
 
     delegate :subscribe, :resubscribe, :unsubscribe, to: :subscription
     
-    after_find :transform_mailchimp_lists_ids
+#    after_find :transform_mailchimp_lists_ids
 
-    def transform_mailchimp_lists_ids
-      return if !self.mailchimp_lists_ids
-      JSON.parse self.mailchimp_lists_ids
-    end
+    # def transform_mailchimp_lists_ids
+    #   return if !self.mailchimp_lists_ids
+    #   JSON.parse self.mailchimp_lists_ids
+    # end
 
   private
     def subscription
