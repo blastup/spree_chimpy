@@ -6,6 +6,7 @@
 }
 #user-subscribe-container label {
   margin-right: 10px;
+  width: 85%;
 }
 
 #user-subscribe-container input {
