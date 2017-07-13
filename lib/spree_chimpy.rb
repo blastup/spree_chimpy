@@ -129,12 +129,12 @@ module Spree::Chimpy
     event  = payload[:event].to_sym
     object = payload[:object] || payload[:class].constantize.find(payload[:id])
     args   = payload[:args]
-
     case event
     when :order
       orders.sync(object)
     when :subscribe
       new_lists_ids = args[0]
+
       if new_lists_ids && new_lists_ids.length > 0
         new_lists_ids.each do |id|
           set_list(id)
@@ -143,7 +143,8 @@ module Spree::Chimpy
 
       # Check if spree_multi_domain gem is applied and thus we have multiple stores
       elsif Spree::Store.column_names.include?('extra_settings')
-        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
+        list( default_list_name ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class)) if default_list_name
       else
         list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
       end
@@ -158,7 +159,8 @@ module Spree::Chimpy
       
       # Check if spree_multi_domain gem is applied and thus we have multiple stores
       elsif Spree::Store.column_names.include?('extra_settings')
-        list( get_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil) ).unsubscribe(object.email)
+        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
+        list( default_list_name ).unsubscribe(object.email) if default_list_name
       else
         list.unsubscribe(object.email)
       end
@@ -166,7 +168,7 @@ module Spree::Chimpy
   end
 
   private
-    def get_list_form_store(store_id)
+    def get_default_list_form_store(store_id)
       if store_id
         store = Spree::Store.find_by_id(store_id)
         return store ? store.extra_settings[:mailchimp_list] : nil
