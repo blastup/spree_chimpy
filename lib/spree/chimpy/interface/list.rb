@@ -22,7 +22,7 @@ module Spree::Chimpy
         begin
           api_call.subscribe(list_id, { email: email }, merge_vars, 'html', @double_opt_in, true, true, @send_welcome_email)
 
-          segment([email]) if options[:customer]
+          # segment([email]) if options[:customer]
         rescue Mailchimp::ListInvalidImportError, Mailchimp::ValidationError => ex
           log "Subscriber #{email} rejected for reason: [#{ex.message}]"
           true
