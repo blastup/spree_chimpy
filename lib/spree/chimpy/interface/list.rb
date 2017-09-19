@@ -64,7 +64,7 @@ module Spree::Chimpy
       end
 
       def find_list_id(name)
-        list = @api.lists.list["data"].detect { |r| r["name"].downcase == name.downcase }
+        list = @api.lists.list(filters=[], start=0, limit=100, sort_field='created', sort_dir='DESC')["data"].detect { |r| r["name"].downcase == name.downcase }
         list["id"] if list
       end
 

@@ -11,7 +11,7 @@
     </div>
     <div class="form-group col-md-12" id="chimpy-subscribed-list-container">
       <div class="title"> <strong><%= Spree.t(:newsletter_lists) %>:</strong> </div>
-      <%= f.collection_check_boxes(:mailchimp_lists_ids,  Spree::Chimpy.api.lists.list["data"].map{|li| [li['id'],li['name']]}, :first, :last, checked: @user.mailchimp_lists_ids ? JSON.parse(@user.mailchimp_lists_ids) : nil) %>
+      <%= f.collection_check_boxes(:mailchimp_lists_ids,  Spree::Chimpy.api.lists.list(filters=[], start=0, limit=100, sort_field='created', sort_dir='DESC')["data"].map{|li| [li['id'],li['name']]}, :first, :last, checked: @user.mailchimp_lists_ids ? JSON.parse(@user.mailchimp_lists_ids) : nil) %>
     </div>
   </div>
 </div>
