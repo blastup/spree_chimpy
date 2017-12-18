@@ -64,8 +64,13 @@ module Spree::Chimpy
       end
 
       def find_list_id(name)
-        list = @api.lists.list(filters=[], start=0, limit=100, sort_field='created', sort_dir='DESC')["data"].detect { |r| r["name"].downcase == name.downcase }
-        list["id"] if list
+        begin
+          list = @api.lists.list(filters=[], start=0, limit=100, sort_field='created', sort_dir='DESC')["data"].detect { |r| r["name"].downcase == name.downcase }
+          list["id"] if list
+        rescue Exception => e
+          Rails.logger.info "@@@@@@@@@@@@@@ MAILCHIMP ERROR: #{e.message}"
+          nil
+        end
       end
 
       def list_id
