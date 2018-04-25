@@ -149,9 +149,6 @@ module Spree::Chimpy
           set_list(id)
           list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
         end
-      else
-        list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
-      end
 
       # Check if spree_multi_domain gem is applied and thus we have multiple stores
       elsif Spree::Store.column_names.include?('extra_settings')
