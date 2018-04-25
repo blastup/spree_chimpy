@@ -10,18 +10,23 @@ Spree::Admin::UsersController.class_eval do
         flash.now[:success] = Spree.t(:account_updated)
       end
     rescue Exception => e
-      flash.now[:error] =  e.message
+      flash.now[:error] = e.message
     end
 
     render :edit
   end
 
-  def user_params
-    params[:user][:mailchimp_lists_ids] = params[:user][:mailchimp_lists_ids].select{|l| !l.blank? }.to_json if !params[:user][:mailchimp_lists_ids].blank?
-    
-    params.require(:user).permit(permitted_user_attributes |
-                                 [spree_role_ids: [],
-                                  ship_address_attributes: permitted_address_attributes,
-                                  bill_address_attributes: permitted_address_attributes])
-  end
+  private
+
+    def user_params
+      if !params[:user][:mailchimp_lists_ids].blank?
+        mailchimp_lists_ids = params[:user][:mailchimp_lists_ids].is_a?(Array) ? params[:user][:mailchimp_lists_ids] : JSON.parse(params[:user][:mailchimp_lists_ids])
+        params[:user][:mailchimp_lists_ids] = mailchimp_lists_ids.select{|l| !l.blank? }.to_json 
+      end
+      
+      params.require(:user).permit(permitted_user_attributes |
+                                   [spree_role_ids: [],
+                                    ship_address_attributes: permitted_address_attributes,
+                                    bill_address_attributes: permitted_address_attributes])
+    end
 end

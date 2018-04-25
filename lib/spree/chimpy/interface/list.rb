@@ -22,7 +22,7 @@ module Spree::Chimpy
         begin
           api_call.subscribe(list_id, { email: email }, merge_vars, 'html', @double_opt_in, true, true, @send_welcome_email)
 
-          segment([email]) if options[:customer]
+          # segment([email]) if options[:customer]
         rescue Mailchimp::ListInvalidImportError, Mailchimp::ValidationError => ex
           log "Subscriber #{email} rejected for reason: [#{ex.message}]"
           true
@@ -64,8 +64,13 @@ module Spree::Chimpy
       end
 
       def find_list_id(name)
-        list = @api.lists.list["data"].detect { |r| r["name"] == name }
-        list["id"] if list
+        begin
+          list = @api.lists.list(filters=[], start=0, limit=100, sort_field='created', sort_dir='DESC')["data"].detect { |r| r["name"].downcase == name.downcase }
+          list["id"] if list
+        rescue Exception => e
+          Rails.logger.info "@@@@@@@@@@@@@@ MAILCHIMP ERROR: #{e.message}"
+          nil
+        end
       end
 
       def list_id

@@ -33,12 +33,28 @@ module Spree::Chimpy
     @api = Mailchimp::API.new(Config.key, Config.api_options) if configured?
   end
 
-  def list
-    @list ||= Interface::List.new(Config.list_name,
+  def list(list_name = nil)
+    if list_name
+      @list = Interface::List.new(list_name,
                         Config.customer_segment_name,
                         Config.double_opt_in,
                         Config.send_welcome_email,
                         Config.list_id) if configured?
+    else
+      @list ||= Interface::List.new(Config.list_name,
+                        Config.customer_segment_name,
+                        Config.double_opt_in,
+                        Config.send_welcome_email,
+                        Config.list_id) if configured?
+    end
+  end
+
+  def set_list(id)
+    @list = Interface::List.new(nil,
+                        Config.customer_segment_name,
+                        Config.double_opt_in,
+                        Config.send_welcome_email,
+                        id) if configured?
   end
 
   def set_list(id)
@@ -127,6 +143,7 @@ module Spree::Chimpy
       orders.sync(object)
     when :subscribe
       new_lists_ids = args[0]
+
       if new_lists_ids && new_lists_ids.length > 0
         new_lists_ids.each do |id|
           set_list(id)
@@ -135,6 +152,15 @@ module Spree::Chimpy
       else
         list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
       end
+
+      # Check if spree_multi_domain gem is applied and thus we have multiple stores
+      elsif Spree::Store.column_names.include?('extra_settings')
+        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
+        list( default_list_name ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class)) if default_list_name
+      else
+        list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+      end
+    
     when :unsubscribe
       removed_lists_ids = args[0]
       if removed_lists_ids && removed_lists_ids.length > 0
@@ -142,9 +168,24 @@ module Spree::Chimpy
           set_list(id)
           list.unsubscribe(object.email)
         end
+      
+      # Check if spree_multi_domain gem is applied and thus we have multiple stores
+      elsif Spree::Store.column_names.include?('extra_settings')
+        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
+        list( default_list_name ).unsubscribe(object.email) if default_list_name
       else
         list.unsubscribe(object.email)
       end
     end
   end
+
+  private
+    def get_default_list_form_store(store_id)
+      if store_id
+        store = Spree::Store.find_by_id(store_id)
+        return store ? store.extra_settings[:mailchimp_list] : nil
+      end
+      
+      return nil
+    end
 end

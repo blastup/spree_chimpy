@@ -25,7 +25,6 @@ module Spree::Chimpy
       block.call if block
 
       return unless configured?
-
       if unsubscribing?
         defer(:unsubscribe)
       elsif subscribing? || merge_vars_changed?
@@ -46,6 +45,7 @@ module Spree::Chimpy
     end
     
     def prev_lists_ids
+      return [] if @model.changes[:mailchimp_lists_ids][0].nil?
       JSON.parse(@model.changes[:mailchimp_lists_ids][0])
     end
     
@@ -70,7 +70,7 @@ module Spree::Chimpy
     end
 
     def unsubscribing?
-      !@model.new_record? && !@model.subscribed && @model.subscribed_changed?
+      !@model.id_changed? && !@model.new_record? && !@model.subscribed && @model.subscribed_changed?
     end
 
     def merge_vars_changed?
