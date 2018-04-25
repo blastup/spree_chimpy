@@ -12,7 +12,7 @@ if Spree.user_class
 
     def transform_mailchimp_lists_ids
       return if !self.mailchimp_lists_ids
-      JSON.parse self.mailchimp_lists_ids
+      JSON.parse self.mailchimp_lists_ids.to_s
     end
 
   private
