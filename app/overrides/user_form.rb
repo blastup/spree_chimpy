@@ -1,4 +1,4 @@
-Deface::Override.new(:virtual_path => "spree/shared/_user_form",
+Deface::Override.new(:virtual_path => "spree/admin/users/_configurations",
                      :name         => "user_form_subscription",
-                     :insert_after => "[data-hook=signup_below_password_fields]",
+                     :insert_after => "[data-hook=admin_user_push_to_amsterdam]",
                      :partial      => "spree/shared/user_subscription")
