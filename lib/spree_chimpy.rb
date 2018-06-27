@@ -149,13 +149,9 @@ module Spree::Chimpy
           set_list(id)
           list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
         end
-
-      # Check if spree_multi_domain gem is applied and thus we have multiple stores
-      elsif Spree::Store.column_names.include?('extra_settings')
-        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
-        list( default_list_name ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class)) if default_list_name
       else
-        list.subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class))
+        default_list_name = get_default_list_form_store(Spree::Store.current.id)
+        list( default_list_name ).subscribe(object.email, merge_vars(object), customer: object.is_a?(Spree.user_class)) if default_list_name
       end
     
     when :unsubscribe
@@ -165,22 +161,18 @@ module Spree::Chimpy
           set_list(id)
           list.unsubscribe(object.email)
         end
-      
-      # Check if spree_multi_domain gem is applied and thus we have multiple stores
-      elsif Spree::Store.column_names.include?('extra_settings')
-        default_list_name = get_default_list_form_store( object.is_a?(Spree.user_class) ? object.subscribed_to_store_id : nil)
-        list( default_list_name ).unsubscribe(object.email) if default_list_name
       else
-        list.unsubscribe(object.email)
+        default_list_name = get_default_list_form_store(Spree::Store.current.id)
+        list( default_list_name ).unsubscribe(object.email) if default_list_name
       end
     end
   end
 
   private
     def get_default_list_form_store(store_id)
-      if store_id
-        store = Spree::Store.find_by_id(store_id)
-        return store ? store.extra_settings[:mailchimp_list] : nil
+      if store_id && ActiveRecord::Base.connection.table_exists?('spree_extra_settings')
+        mailchimp_list = Spree::ExtraSetting.where(:key => "mailchimp_list").first
+        return mailchimp_list ? mailchimp_list.value : nil
       end
       
       return nil
