@@ -1,6 +1,6 @@
-Deface::Override.new(:virtual_path => "spree/admin/users/_form",
+Deface::Override.new(:virtual_path => "spree/admin/users/_newsletters",
                      :name         => "admin_user_form_subscription",
-                     :insert_after => "[data-hook=admin_user_form_fields]",
+                     :insert_top => "[data-hook=admin_user_newsletters]",
                      :partial      => "spree/admin/users/subscription_form")
 
 Deface::Override.new(:virtual_path => "spree/admin/users/show",
