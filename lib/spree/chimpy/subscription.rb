@@ -46,11 +46,11 @@ module Spree::Chimpy
     
     def prev_lists_ids
       return [] if @model.changes[:mailchimp_lists_ids][0].nil?
-      JSON.parse(@model.changes[:mailchimp_lists_ids][0])
+      JSON.parse(@model.changes[:mailchimp_lists_ids][0].to_s)
     end
     
     def new_lists_ids
-      JSON.parse(@model.changes[:mailchimp_lists_ids][1])
+      JSON.parse(@model.changes[:mailchimp_lists_ids][1].to_s)
     end
 
     def lists_have_changed?
