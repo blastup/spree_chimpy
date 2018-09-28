@@ -66,7 +66,9 @@ module Spree::Chimpy
   end
 
   def orders
-    @orders ||= Interface::Orders.new if configured?
+    if Object.const_defined?('Spree::Chimpy::Interface::Orders')
+      @orders ||= Interface::Orders.new if configured?
+    end
   end
 
   def list_exists?
