@@ -142,7 +142,9 @@ module Spree::Chimpy
 
     case event
     when :order
-      orders.sync(object)
+      if orders
+        orders.sync(object)
+      end
     when :subscribe
       new_lists_ids = args[0]
 
